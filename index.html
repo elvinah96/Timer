@@ -56,7 +56,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 10px;
+    padding: 6px;
     min-height: 100%;
   }
   .card {
@@ -64,7 +64,7 @@
     border: 1px solid var(--line);
     border-radius: 14px;
     box-shadow: var(--shadow);
-    padding: 16px 18px 16px;
+    padding: 10px 12px 10px;
     width: 100%;
     max-width: 260px;
     transition: box-shadow .25s ease;
@@ -73,14 +73,14 @@
     box-shadow: var(--shadow), 0 0 0 3px var(--done);
   }
   .label {
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--ink);
     text-decoration: underline;
     text-decoration-color: var(--accent);
     text-decoration-thickness: 2px;
     text-underline-offset: 3px;
-    margin: 0 0 10px;
+    margin: 0 0 6px;
   }
   .face {
     display: flex;
@@ -88,11 +88,11 @@
     justify-content: center;
     gap: 2px;
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
-    font-size: 15px;
+    font-weight: 700;
+    font-size: 21px;
     line-height: 1;
     letter-spacing: 0;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     cursor: text;
   }
   .face.done { color: var(--done); }
@@ -100,11 +100,11 @@
     display: none;
     font-variant-numeric: tabular-nums;
     font-weight: 700;
-    font-size: 32px;
+    font-size: 36px;
     line-height: 1;
     text-align: center;
     white-space: nowrap;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
   }
   .countdown.done { color: var(--done); }
   .card.started .face { display: none; }
@@ -131,16 +131,16 @@
     flex-wrap: wrap;
     gap: 5px;
     justify-content: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
   .chip {
     border: 1px solid var(--line);
     background: transparent;
     color: var(--ink-soft);
     font-family: inherit;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
-    padding: 6px 11px;
+    padding: 5px 10px;
     border-radius: 999px;
     cursor: pointer;
     transition: border-color .15s ease, color .15s ease;
@@ -159,7 +159,7 @@
     flex: 1;
     font-family: inherit;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     padding: 8px 0;
     border-radius: 9px;
     border: none;
@@ -175,7 +175,7 @@
     height: 3px;
     border-radius: 999px;
     background: var(--accent-soft);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     overflow: hidden;
   }
   .bar-fill {
