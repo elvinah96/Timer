@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Timer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EAF0F7;
+    --card: #FFFFFF;
+    --ink: #16233A;
+    --ink-soft: #6B7A90;
+    --accent: #2C5FA8;
+    --accent-soft: #DCE6F5;
+    --line: #D6E1EF;
+    --done: #B8543F;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1420;
+      --card: #1A2536;
+      --ink: #E7ECF5;
+      --ink-soft: #8C9AB2;
+      --accent: #6E9FE8;
+      --accent-soft: #223250;
+      --line: #263349;
+      --done: #E0836C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1420;
+    --card: #1A2536;
+    --ink: #E7ECF5;
+    --ink-soft: #8C9AB2;
+    --accent: #6E9FE8;
+    --accent-soft: #223250;
+    --line: #263349;
+    --done: #E0836C;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    min-height: 100%;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px 14px;
+    width: 100%;
+    max-width: 220px;
+    transition: box-shadow .25s ease;
+  }
+  .card.done {
+    box-shadow: 0 0 0 3px var(--done);
+  }
+  .label {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin: 0 0 8px;
+  }
+  .face {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-size: 32px;
+    line-height: 1;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+    cursor: text;
+  }
+  .face.done { color: var(--done); }
+  .face input {
+    width: 1.35ch;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+    -moz-appearance: textfield;
+  }
+  .face input.hh, .face input.mm, .face input.ss { width: 1.75ch; }
+  .face input::-webkit-outer-spin-button,
+  .face input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .face input:focus { outline: none; color: var(--accent); }
+  .face span.colon { color: var(--ink-soft); }
+  .running .face input { pointer-events: none; }
+
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  .chip {
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip:focus-visible, button:focus-visible, .face input:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 6px;
+  }
+  .btn {
+    flex: 1;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 8px 0;
+    border-radius: 9px;
+    border: none;
+    cursor: pointer;
+    transition: opacity .15s ease, transform .05s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.ghost { background: var(--accent-soft); color: var(--accent); }
+  .btn:disabled { opacity: .5; cursor: default; }
+
+  .bar {
+    height: 3px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 100%;
+    transform-origin: left;
+    transition: width 1s linear;
+  }
+  .bar-fill.done { background: var(--done); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar-fill { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <p class="label" id="statusLabel">Set a time</p>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <div class="face" id="face">
+      <input class="hh" id="hh" inputmode="numeric" maxlength="2" value="00" aria-label="Hours">
+      <span class="colon">:</span>
+      <input class="mm" id="mm" inputmode="numeric" maxlength="2" value="05" aria-label="Minutes">
+      <span class="colon">:</span>
+      <input class="ss" id="ss" inputmode="numeric" maxlength="2" value="00" aria-label="Seconds">
+    </div>
+    <div class="presets">
+      <button class="chip" data-secs="60">1m</button>
+      <button class="chip" data-secs="180">3m</button>
+      <button class="chip" data-secs="300">5m</button>
+      <button class="chip" data-secs="600">10m</button>
+      <button class="chip" data-secs="900">15m</button>
+      <button class="chip" data-secs="1500">25m</button>
+    </div>
+    <div class="controls">
+      <button class="btn primary" id="startBtn">Start</button>
+      <button class="btn ghost" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+<script>
+(function() {
+  const card = document.getElementById('card');
+  const face = document.getElementById('face');
+  const hh = document.getElementById('hh');
+  const mm = document.getElementById('mm');
+  const ss = document.getElementById('ss');
+  const statusLabel = document.getElementById('statusLabel');
+  const startBtn = document.getElementById('startBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const barFill = document.getElementById('barFill');
+
+  let totalSeconds = 0;      // full duration set by user
+  let remaining = 0;         // seconds left
+  let running = false;
+  let intervalId = null;
+  let endTime = null;
+
+  function clampInput(el, max) {
+    let v = parseInt(el.value, 10);
+    if (isNaN(v) || v < 0) v = 0;
+    if (v > max) v = max;
+    el.value = String(v).padStart(2, '0');
+    return v;
+  }
+
+  function readInputs() {
+    const h = clampInput(hh, 99);
+    const m = clampInput(mm, 59);
+    const s = clampInput(ss, 59);
+    return h * 3600 + m * 60 + s;
+  }
+
+  function writeInputs(totalSecs) {
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    hh.value = String(h).padStart(2, '0');
+    mm.value = String(m).padStart(2, '0');
+    ss.value = String(s).padStart(2, '0');
+  }
+
+  function saveLast(secs) {
+    try { localStorage.setItem('timer_last_secs', String(secs)); } catch (e) {}
+  }
+  function loadLast() {
+    try {
+      const v = localStorage.getItem('timer_last_secs');
+      if (v !== null) return parseInt(v, 10);
+    } catch (e) {}
+    return 300;
+  }
+
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      [0, 0.3, 0.6].forEach(function(offset) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.value = 880;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        gain.gain.setValueAtTime(0.001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.25, now + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.25);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.3);
+      });
+    } catch (e) {}
+  }
+
+  function tick() {
+    const secsLeft = Math.max(0, Math.round((endTime - Date.now()) / 1000));
+    remaining = secsLeft;
+    writeInputs(remaining);
+    const pct = totalSeconds > 0 ? (remaining / totalSeconds) * 100 : 0;
+    barFill.style.width = pct + '%';
+    if (remaining <= 0) {
+      finish();
+    }
+  }
+
+  function finish() {
+    clearInterval(intervalId);
+    intervalId = null;
+    running = false;
+    card.classList.remove('running');
+    card.classList.add('done');
+    face.classList.add('done');
+    barFill.classList.add('done');
+    statusLabel.textContent = "Time's up";
+    startBtn.textContent = 'Start';
+    startBtn.disabled = false;
+    resetBtn.disabled = false;
+    beep();
+  }
+
+  function start() {
+    if (remaining <= 0) {
+      totalSeconds = readInputs();
+      if (totalSeconds <= 0) return;
+      remaining = totalSeconds;
+      saveLast(totalSeconds);
+    }
+    card.classList.remove('done');
+    face.classList.remove('done');
+    barFill.classList.remove('done');
+    running = true;
+    card.classList.add('running');
+    endTime = Date.now() + remaining * 1000;
+    statusLabel.textContent = 'Running';
+    startBtn.textContent = 'Pause';
+    intervalId = setInterval(tick, 250);
+    tick();
+  }
+
+  function pause() {
+    clearInterval(intervalId);
+    intervalId = null;
+    running = false;
+    card.classList.remove('running');
+    statusLabel.textContent = 'Paused';
+    startBtn.textContent = 'Resume';
+  }
+
+  function reset() {
+    clearInterval(intervalId);
+    intervalId = null;
+    running = false;
+    remaining = 0;
+    totalSeconds = 0;
+    card.classList.remove('running', 'done');
+    face.classList.remove('done');
+    barFill.classList.remove('done');
+    barFill.style.width = '100%';
+    statusLabel.textContent = 'Set a time';
+    startBtn.textContent = 'Start';
+    startBtn.disabled = false;
+    resetBtn.disabled = false;
+    writeInputs(loadLast());
+  }
+
+  startBtn.addEventListener('click', function() {
+    if (running) { pause(); } else { start(); }
+  });
+  resetBtn.addEventListener('click', reset);
+
+  [hh, mm, ss].forEach(function(el, idx, arr) {
+    el.addEventListener('focus', function() { el.select(); });
+    el.addEventListener('input', function() {
+      el.value = el.value.replace(/[^0-9]/g, '').slice(0, 2);
+    });
+    el.addEventListener('blur', function() {
+      const max = el === mm || el === ss ? 59 : 99;
+      clampInput(el, max);
+    });
+  });
+
+  document.querySelectorAll('.chip').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      reset();
+      const secs = parseInt(btn.getAttribute('data-secs'), 10);
+      writeInputs(secs);
+    });
+  });
+
+  // init
+  writeInputs(loadLast());
+  barFill.style.width = '100%';
+})();
+</script>
+</body>
+</html>
