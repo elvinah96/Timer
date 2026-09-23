@@ -89,15 +89,29 @@
     gap: 2px;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
-    font-size: 50px;
+    font-size: 15px;
     line-height: 1;
     letter-spacing: 0;
     margin-bottom: 10px;
     cursor: text;
   }
   .face.done { color: var(--done); }
+  .countdown {
+    display: none;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    margin-bottom: 10px;
+  }
+  .countdown.done { color: var(--done); }
+  .card.started .face { display: none; }
+  .card.started .countdown { display: block; }
+  .card.started .presets { display: none; }
   .face input {
-    width: 1.3ch;
+    width: 2.1ch;
     text-align: center;
     background: transparent;
     border: none;
@@ -180,7 +194,7 @@
 </head>
 <body>
   <div class="card" id="card">
-    <p class="label" id="statusLabel">Set a time</p>
+    <p class="label" id="statusLabel">Timer</p>
     <div class="bar"><div class="bar-fill" id="barFill"></div></div>
     <div class="face" id="face">
       <input class="hh" id="hh" inputmode="numeric" maxlength="2" value="00" aria-label="Hours">
@@ -189,13 +203,14 @@
       <span class="colon">:</span>
       <input class="ss" id="ss" inputmode="numeric" maxlength="2" value="00" aria-label="Seconds">
     </div>
+    <div class="countdown" id="countdown">0</div>
     <div class="presets">
       <button class="chip" data-secs="60">1m</button>
-      <button class="chip" data-secs="180">3m</button>
       <button class="chip" data-secs="300">5m</button>
       <button class="chip" data-secs="600">10m</button>
       <button class="chip" data-secs="900">15m</button>
-      <button class="chip" data-secs="1500">25m</button>
+      <button class="chip" data-secs="1800">30m</button>
+      <button class="chip" data-secs="3600">60m</button>
     </div>
     <div class="controls">
       <button class="btn primary" id="startBtn">Start</button>
@@ -214,6 +229,7 @@
   const startBtn = document.getElementById('startBtn');
   const resetBtn = document.getElementById('resetBtn');
   const barFill = document.getElementById('barFill');
+  const countdown = document.getElementById('countdown');
 
   let totalSeconds = 0;      // full duration set by user
   let remaining = 0;         // seconds left
@@ -275,10 +291,24 @@
     } catch (e) {}
   }
 
+  function formatCountdown(secs) {
+    if (secs < 60) return secs + 's';
+    if (secs <= 90 * 60) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return m + 'm ' + s + 's';
+    }
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    return h + 'h ' + m + 'm ' + s + 's';
+  }
+
   function tick() {
     const secsLeft = Math.max(0, Math.round((endTime - Date.now()) / 1000));
     remaining = secsLeft;
     writeInputs(remaining);
+    countdown.textContent = formatCountdown(remaining);
     const pct = totalSeconds > 0 ? (remaining / totalSeconds) * 100 : 0;
     barFill.style.width = pct + '%';
     if (remaining <= 0) {
@@ -293,8 +323,8 @@
     card.classList.remove('running');
     card.classList.add('done');
     face.classList.add('done');
+    countdown.classList.add('done');
     barFill.classList.add('done');
-    statusLabel.textContent = "Time's up";
     startBtn.textContent = 'Start';
     startBtn.disabled = false;
     resetBtn.disabled = false;
@@ -310,11 +340,12 @@
     }
     card.classList.remove('done');
     face.classList.remove('done');
+    countdown.classList.remove('done');
     barFill.classList.remove('done');
     running = true;
     card.classList.add('running');
+    card.classList.add('started');
     endTime = Date.now() + remaining * 1000;
-    statusLabel.textContent = 'Running';
     startBtn.textContent = 'Pause';
     intervalId = setInterval(tick, 250);
     tick();
@@ -325,7 +356,6 @@
     intervalId = null;
     running = false;
     card.classList.remove('running');
-    statusLabel.textContent = 'Paused';
     startBtn.textContent = 'Resume';
   }
 
@@ -335,11 +365,11 @@
     running = false;
     remaining = 0;
     totalSeconds = 0;
-    card.classList.remove('running', 'done');
+    card.classList.remove('running', 'done', 'started');
     face.classList.remove('done');
+    countdown.classList.remove('done');
     barFill.classList.remove('done');
     barFill.style.width = '100%';
-    statusLabel.textContent = 'Set a time';
     startBtn.textContent = 'Start';
     startBtn.disabled = false;
     resetBtn.disabled = false;
