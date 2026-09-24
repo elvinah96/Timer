@@ -22,7 +22,7 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #17171a;
+      --bg: #000000;
       --card: #202024;
       --line: #2d2d33;
       --ink: #f0f0f2;
@@ -34,7 +34,7 @@
     }
   }
   :root[data-theme="dark"] {
-    --bg: #17171a;
+    --bg: #000000;
     --card: #202024;
     --line: #2d2d33;
     --ink: #f0f0f2;
@@ -168,7 +168,7 @@
   }
   .btn:active { transform: scale(0.98); }
   .btn.primary { background: var(--accent); color: #fff; }
-  .btn.ghost { background: var(--accent-soft); color: var(--accent); }
+  .btn.ghost { background: var(--card); color: var(--accent); border: 1px solid var(--line); }
   .btn:disabled { opacity: .5; cursor: default; }
 
   .bar {
